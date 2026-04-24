@@ -4,18 +4,18 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/madhav-murali/medjed/internal"
+	"github.com/madhav-murali/medjed"
 )
 
-func RateLimitMiddleware(limiter internal.Limiter) gin.HandlerFunc {
+// RateLimitMiddleware returns a Gin middleware that enforces rate limiting.
+// Pass any implementation of medjed.Limiter.
+func RateLimitMiddleware(limiter medjed.Limiter) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userIp := c.ClientIP()
 		if limiter.Allow(c, userIp) == 0 {
-			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{"error": "woah slow down buddy ):<"})
+			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{"error": "rate limit exceeded"})
 			return
 		}
 		c.Next()
-		// lat := time.Since(time.Unix(0, time.Now().UnixNano()))
-		// log.Printf("request took: %d ns", lat.Nanoseconds())
 	}
 }

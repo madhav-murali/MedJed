@@ -5,12 +5,21 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
   api:
     build: .
     ports:
       - "8080:8080"
+    environment:
+      - REDIS_ADDR=redis:6379
+      - GIN_MODE=release
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
 
 volumes:
   redis_data:
